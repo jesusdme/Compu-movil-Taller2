@@ -17,6 +17,7 @@ import android.util.Log
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -34,6 +35,8 @@ import com.google.android.gms.location.LocationRequest
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import java.io.*
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 
 class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -54,6 +57,8 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var mFusedLocationClient: FusedLocationProviderClient
     private lateinit var mLocationRequest: LocationRequest
     private lateinit var mLocationCallback: LocationCallback
+    private val REQUEST_CODE = 101
+
 
     companion object {
         const val lowerLeftLatitude = 1.396967
@@ -66,63 +71,75 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
         super.onCreate(savedInstanceState)
         binding = ActivityMapsBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        //luz
-        sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
-        lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MapsActivity)
+        // Solicitar permiso de escritura
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_CODE
+            )
+        } else {
 
-        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MapsActivity)
+            //luz
+            sensorManager = getSystemService(Context.SENSOR_SERVICE) as SensorManager
+            lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MapsActivity)
 
-        mLocationRequest = createLocationRequest()
+            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MapsActivity)
+
+            mLocationRequest = createLocationRequest()
 
 
-        mLocationCallback = object : LocationCallback() {
-            override fun onLocationResult(locationResult: LocationResult) {
-                var ubicacion = locationResult.lastLocation
-                Log.i("ubicacion", "--------------$ubicacion---------")
-                if (ubicacion != null) {
-                    showUserLocation()
+            mLocationCallback = object : LocationCallback() {
+                override fun onLocationResult(locationResult: LocationResult) {
+                    var ubicacion = locationResult.lastLocation
+                    Log.i("ubicacion", "--------------$ubicacion---------")
+                    if (ubicacion != null) {
+                        showUserLocation()
 
-                }
-            }
-        }
-
-        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
-        val mapFragment = supportFragmentManager
-            .findFragmentById(R.id.map) as SupportMapFragment
-        mapFragment.getMapAsync(this@MapsActivity)
-
-        lightSensorListener = object : SensorEventListener {
-            override fun onSensorChanged(event: SensorEvent) {
-                if (inic == true) {
-                    if (mMap != null) {
-                        if (event.values[0] < 5000) {
-                            Log.i("MAPS", "DARK MAP " + event.values[0])
-                            mMap.setMapStyle(
-                                MapStyleOptions.loadRawResourceStyle(
-                                    this@MapsActivity,
-                                    R.raw.style_json
-                                )
-                            )
-                        } else {
-                            Log.i("MAPS", "LIGHT MAP " + event.values[0])
-                            mMap.setMapStyle(
-                                MapStyleOptions.loadRawResourceStyle(
-                                    this@MapsActivity,
-                                    R.raw.style_json2
-                                )
-                            )
-                        }
-                    } else {
-                        Log.i("MAPS", "mMap is null")
                     }
                 }
             }
 
-            override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
+
+            // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+            val mapFragment = supportFragmentManager
+                .findFragmentById(R.id.map) as SupportMapFragment
+            mapFragment.getMapAsync(this@MapsActivity)
+
+            lightSensorListener = object : SensorEventListener {
+                override fun onSensorChanged(event: SensorEvent) {
+                    if (inic == true) {
+                        if (mMap != null) {
+                            if (event.values[0] < 5000) {
+                                Log.i("MAPS", "DARK MAP " + event.values[0])
+                                mMap.setMapStyle(
+                                    MapStyleOptions.loadRawResourceStyle(
+                                        this@MapsActivity,
+                                        R.raw.style_json
+                                    )
+                                )
+                            } else {
+                                Log.i("MAPS", "LIGHT MAP " + event.values[0])
+                                mMap.setMapStyle(
+                                    MapStyleOptions.loadRawResourceStyle(
+                                        this@MapsActivity,
+                                        R.raw.style_json2
+                                    )
+                                )
+                            }
+                        } else {
+                            Log.i("MAPS", "mMap is null")
+                        }
+                    }
+                }
+
+                override fun onAccuracyChanged(sensor: Sensor, accuracy: Int) {}
+            }
+
         }
-
-
     }
 
     private fun showUserLocation() {
@@ -180,28 +197,46 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun guardarJson(context: Context, latitud: Double, longitud: Double) {
-        val fechaHora = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date())
-        val registro = Registro(latitud,longitud,fechaHora)
-        val fileName = "registros.json"
-        val file = File(context.filesDir, fileName)
-        val escrib: Writer
-        var json= JSONObject()
-        json.put("registro",registro)
-        print(json.toString()+"//////////////////////////////////////////////////")
-
-        escrib= BufferedWriter(OutputStreamWriter(FileOutputStream(file, true)))
-
-        if (!file.exists()) {
-            file.createNewFile()
-        }
-
-        if (file.length() > 0) {
-            escrib.write(json.toString())
+        // Solicitar permiso de escritura
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_CODE
+            )
         } else {
-            escrib.write(json.toString())
-        }
+            val fechaHora = LocalDateTime.now()
+            val formatoFechaHora = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
 
-        escrib.close()
+            val json = JSONObject()
+            json.put("latitud", latitud)
+            json.put("longitud", longitud)
+            json.put("fecha_hora", fechaHora.format(formatoFechaHora))
+
+            var jsonString = json.toString()
+
+
+            print(jsonString + "//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
+            val fileName = "registros.json"
+            val file = File(context.filesDir, fileName)
+            val escrib: Writer
+
+            escrib = BufferedWriter(OutputStreamWriter(FileOutputStream(file, true)))
+
+            if (!file.exists()) {
+                file.createNewFile()
+            }
+
+            if (file.length() > 0) {
+                escrib.write(json.toString())
+            } else {
+                escrib.write(json.toString())
+            }
+
+            escrib.close()
+        }
     }
 
     override fun onMapReady(googleMap: GoogleMap) {
