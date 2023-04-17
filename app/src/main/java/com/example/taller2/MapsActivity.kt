@@ -25,9 +25,7 @@ import com.google.android.gms.maps.SupportMapFragment
 import com.example.taller2.databinding.ActivityMapsBinding
 import com.google.android.gms.location.*
 import com.google.android.gms.maps.model.*
-import org.json.JSONArray
 import org.json.JSONObject
-import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.*
 import com.google.android.gms.location.LocationRequest
@@ -181,13 +179,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
                             if (cambios > -1) {
                                 guardarJson(this@MapsActivity, it.latitude, it.longitude)
-                                println("********************************* JSONmetros---------------------------------------------------")
-
                             }
                             cambios++
                         }
-
-                        println("La distancia entre las dos ubicaciones es de $distancia metros---------------------------------------------------")
                         println("*********************************$cambios CAMBIOS ---------------------------------------------------")
 
                     }
@@ -215,7 +209,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             json.put("longitud", longitud)
             json.put("fecha_hora", fechaHora.format(formatoFechaHora))
 
-            var jsonString = json.toString()
+            var jsonString = json.toString(4)+","+"\n"
 
 
             print(jsonString + "//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////")
@@ -230,9 +224,9 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             }
 
             if (file.length() > 0) {
-                escrib.write(json.toString())
+                escrib.write(jsonString)
             } else {
-                escrib.write(json.toString())
+                escrib.write(jsonString)
             }
 
             escrib.close()
