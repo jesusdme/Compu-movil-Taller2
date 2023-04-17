@@ -30,6 +30,7 @@ class MainActivity : AppCompatActivity() {
     private val PERMISSIONS_REQUEST_ACCESS_LOCATION = 5 //id localizacion
     private lateinit var mLocationCallback: LocationCallback
     private lateinit var photoImageView: ImageView // Referencia al ImageView donde se mostrará la foto capturada
+    private val REQUEST_CODE = 101
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -60,8 +61,18 @@ class MainActivity : AppCompatActivity() {
 
             } else //si tiene permiso usar la ubicacion
             {
-                val Intent = Intent(this, MapsActivity::class.java)
-                startActivity(Intent)
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                    != PackageManager.PERMISSION_GRANTED
+                ) {
+                    ActivityCompat.requestPermissions(
+                        this,
+                        arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                        REQUEST_CODE
+                    )
+                } else {
+                    val Intent = Intent(this, MapsActivity::class.java)
+                    startActivity(Intent)
+                }
             }
         }
 
