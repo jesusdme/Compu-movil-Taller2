@@ -87,6 +87,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
             mLocationRequest = createLocationRequest()
 
+
             mLocationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
                     var ubicacion = locationResult.lastLocation
