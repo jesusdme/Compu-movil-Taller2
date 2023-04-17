@@ -85,10 +85,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
             lightSensor = sensorManager.getDefaultSensor(Sensor.TYPE_LIGHT)
             fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MapsActivity)
 
-            fusedLocationClient = LocationServices.getFusedLocationProviderClient(this@MapsActivity)
-
             mLocationRequest = createLocationRequest()
-
 
             mLocationCallback = object : LocationCallback() {
                 override fun onLocationResult(locationResult: LocationResult) {
