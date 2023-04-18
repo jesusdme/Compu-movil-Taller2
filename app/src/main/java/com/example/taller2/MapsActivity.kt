@@ -280,7 +280,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                         Toast.makeText(
                             this@MapsActivity,
                             "Dirección no encontrada",
-                            Toast.LENGTH_SHORT
+                            Toast.LENGTH_LONG
                         ).show()
                     }
                 }
@@ -288,7 +288,7 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 e.printStackTrace()
             }
         } else {
-            Toast.makeText(this@MapsActivity, "La dirección está vacía", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this@MapsActivity, "La dirección está vacía", Toast.LENGTH_LONG).show()
         }
         binding.texto.setOnEditorActionListener { v, actionId, event ->
             if (actionId == EditorInfo.IME_ACTION_SEND) {
@@ -311,28 +311,30 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                                 MarkerOptions().position(latLng).title(address.getAddressLine(0))
                             )
                             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f))
+                            distanciaToast =
+                                abs(calcularDistancia(miLat, miLon, latLng.latitude, latLng.longitude))
                             val aprox: String = String.format("%.2f", distanciaToast) //2 decimales
                             Toast.makeText(
                                 this@MapsActivity,
                                 "La distancia entre las dos ubicaciones es de $aprox metros",
-                                Toast.LENGTH_SHORT
+                                Toast.LENGTH_LONG
                             ).show()
                         } else {
                             Toast.makeText(
                                 this@MapsActivity,
                                 "Address not found",
-                                Toast.LENGTH_SHORT
+                                Toast.LENGTH_LONG
                             ).show()
                         }
                     } catch (e: IOException) {
                         Toast.makeText(
                             this@MapsActivity,
                             "Geocoding error: " + e.message,
-                            Toast.LENGTH_SHORT
+                            Toast.LENGTH_LONG
                         ).show()
                     }
                 } else {
-                    Toast.makeText(this@MapsActivity, "Please enter an address", Toast.LENGTH_SHORT)
+                    Toast.makeText(this@MapsActivity, "Please enter an address", Toast.LENGTH_LONG)
                         .show()
                 }
                 return@setOnEditorActionListener true
@@ -355,11 +357,11 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
                 Toast.makeText(
                     this@MapsActivity,
                     "La distancia entre las dos ubicaciones es de $aprox metros",
-                    Toast.LENGTH_SHORT
+                    Toast.LENGTH_LONG
                 ).show()
 
             } else
-                Toast.makeText(this@MapsActivity, "Address out of bounds", Toast.LENGTH_SHORT)
+                Toast.makeText(this@MapsActivity, "Address out of bounds", Toast.LENGTH_LONG)
                     .show()
         }
 
@@ -386,50 +388,50 @@ class MapsActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun createLocationRequest(): LocationRequest {
         return LocationRequest.create().apply {
-                setInterval(10000)
-                setFastestInterval(5000)
-                setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
+            setInterval(10000)
+            setFastestInterval(5000)
+            setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY)
         }
     }
-        private fun geoCoderSearchLatLang(latLng: LatLng): String? {
-            val geoCoder = Geocoder(this@MapsActivity, Locale.getDefault())
-            val addresses = geoCoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
-            var address = ""
+    private fun geoCoderSearchLatLang(latLng: LatLng): String? {
+        val geoCoder = Geocoder(this@MapsActivity, Locale.getDefault())
+        val addresses = geoCoder.getFromLocation(latLng.latitude, latLng.longitude, 1)
+        var address = ""
 
-            if (addresses != null && addresses.size > 0) {
-                val returnedAddress = addresses[0]
-                address = "${returnedAddress.thoroughfare}, ${returnedAddress.locality}"
-            }
-            return address
+        if (addresses != null && addresses.size > 0) {
+            val returnedAddress = addresses[0]
+            address = "${returnedAddress.thoroughfare}, ${returnedAddress.locality}"
         }
-
-        override fun onResume() {
-            super.onResume()
-
-            sensorManager.registerListener(
-                lightSensorListener,
-                lightSensor,
-                SensorManager.SENSOR_DELAY_NORMAL
-            )
-        }
-
-        override fun onPause() {
-            super.onPause()
-            sensorManager.unregisterListener(lightSensorListener)
-        }
-
-        fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
-            val radioTierra = 6371 // Radio de la Tierra en km
-            val dLat = Math.toRadians(lat2 - lat1)
-            val dLon = Math.toRadians(lon2 - lon1)
-            val a =
-                sin(dLat / 2) * sin(dLat / 2) + cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(
-                    dLon / 2
-                ) * sin(dLon / 2)
-            val c = 2 * atan2(sqrt(a), sqrt(1 - a))
-            val distanciaEnKM = radioTierra * c
-            val distanciaEnMetros = distanciaEnKM * 1000
-
-            return distanciaEnMetros
-        }
+        return address
     }
+
+    override fun onResume() {
+        super.onResume()
+
+        sensorManager.registerListener(
+            lightSensorListener,
+            lightSensor,
+            SensorManager.SENSOR_DELAY_NORMAL
+        )
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(lightSensorListener)
+    }
+
+    fun calcularDistancia(lat1: Double, lon1: Double, lat2: Double, lon2: Double): Double {
+        val radioTierra = 6371 // Radio de la Tierra en km
+        val dLat = Math.toRadians(lat2 - lat1)
+        val dLon = Math.toRadians(lon2 - lon1)
+        val a =
+            sin(dLat / 2) * sin(dLat / 2) + cos(Math.toRadians(lat1)) * cos(Math.toRadians(lat2)) * sin(
+                dLon / 2
+            ) * sin(dLon / 2)
+        val c = 2 * atan2(sqrt(a), sqrt(1 - a))
+        val distanciaEnKM = radioTierra * c
+        val distanciaEnMetros = distanciaEnKM * 1000
+
+        return distanciaEnMetros
+    }
+}
