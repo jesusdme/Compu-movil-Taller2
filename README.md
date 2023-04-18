@@ -1,5 +1,5 @@
 # Compu-movil-Taller2
-##Bases 3
+## Bases 3
 ## Integrantes:
 -Jesus Molina <br>
 -David Anteliz <br>
